@@ -172,5 +172,43 @@ describe("validate.middleware", () => {
       );
       expect(invalidNext).not.toHaveBeenCalled();
     });
+
+    it("validateStatementQuery rejects from date after to date", () => {
+      const req = {
+        query: { from: "2026-12-31", to: "2026-01-01" },
+      } as unknown as Parameters<typeof validateStatementQuery>[0];
+      const res = createResponseMock();
+      const next = jest.fn() as NextFunction;
+
+      validateStatementQuery(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: "Validation failed",
+          code: "VALIDATION_ERROR",
+          details: expect.arrayContaining([
+            expect.objectContaining({
+              field: "from",
+              message: "from date must be less than or equal to to date",
+            }),
+          ]),
+        })
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("validateStatementQuery accepts from date equal to to date", () => {
+      const req = {
+        query: { from: "2026-06-15", to: "2026-06-15" },
+      } as unknown as Parameters<typeof validateStatementQuery>[0];
+      const res = createResponseMock();
+      const next = jest.fn() as NextFunction;
+
+      validateStatementQuery(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(res.status).not.toHaveBeenCalled();
+    });
   });
 });

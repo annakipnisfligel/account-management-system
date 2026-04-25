@@ -124,10 +124,16 @@ export const transactionService = {
     const account = await accountRepository.findById(accountId);
     if (!account) throw new NotFoundError("Account", String(accountId));
 
+    let toDate: Date | undefined;
+    if (query.to) {
+      toDate = new Date(query.to);
+      toDate.setHours(23, 59, 59, 999);
+    }
+
     return transactionRepository.findByAccountId({
       accountId,
       from: query.from ? new Date(query.from) : undefined,
-      to: query.to ? new Date(query.to) : undefined,
+      to: toDate,
     });
   },
 };

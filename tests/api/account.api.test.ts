@@ -305,6 +305,24 @@ describe("GET /api/accounts/:id/statement", () => {
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
+  it("returns transactions when from and to are the same date", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 1000);
+
+    await request(app)
+      .post(`/api/accounts/${account.accountId}/deposit`)
+      .send({ value: 50 });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const res = await request(app).get(
+      `/api/accounts/${account.accountId}/statement?from=${today}&to=${today}`
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.count).toBe(1);
+  });
+
   it("returns 400 for invalid date format", async () => {
     const person = await seedTestPerson();
     const account = await seedTestAccount(person.personId);

@@ -45,10 +45,15 @@ const dateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
   message: "must be an ISO 8601 date in YYYY-MM-DD format",
 });
 
-const statementQuerySchema = z.object({
-  from: dateOnlySchema.optional(),
-  to: dateOnlySchema.optional(),
-});
+const statementQuerySchema = z
+  .object({
+    from: dateOnlySchema.optional(),
+    to: dateOnlySchema.optional(),
+  })
+  .refine(
+    ({ from, to }) => !from || !to || from <= to,
+    { message: "from date must be less than or equal to to date", path: ["from"] }
+  );
 
 // Validate the request body using the provided schema
 export function validateBody<T>(schema: ZodSchema<T>) {

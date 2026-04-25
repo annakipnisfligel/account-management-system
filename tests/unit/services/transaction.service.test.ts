@@ -183,10 +183,13 @@ describe("transactionService.getStatement", () => {
       { from: "2024-01-01", to: "2024-12-31" }
     );
 
+    const expectedTo = new Date("2024-12-31");
+    expectedTo.setHours(23, 59, 59, 999);
+
     expect(mockTransactionRepo.findByAccountId).toHaveBeenCalledWith({
       accountId: 1,
       from: new Date("2024-01-01"),
-      to: new Date("2024-12-31"),
+      to: expectedTo,
     });
   });
 
