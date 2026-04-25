@@ -22,6 +22,92 @@ Supports account creation, balance queries, deposits, withdrawals, account block
 
 ---
 
+## Quickstart — Docker (recommended)
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
+- [Node.js 18+](https://nodejs.org/) and npm
+
+### 1. Clone and install dependencies
+
+```bash
+git clone <your-repo-url>
+cd account-management-system
+npm install
+```
+
+### 2. Configure environment
+
+Copy the provided example file and adjust if needed:
+
+```bash
+cp .env.example .env
+```
+
+The defaults match the Docker setup below and work out of the box:
+
+```env
+PORT=3000
+NODE_ENV=development
+DATABASE_URL="postgresql://postgres:postgres@localhost:5434/account_management_db?schema=public"
+```
+
+### 3. Start the databases
+
+```bash
+docker compose up -d
+```
+
+This starts two isolated PostgreSQL containers:
+
+| Container | Port | Database | Purpose |
+|---|---|---|---|
+| `account_management_db` | `5434` | `account_management_db` | Development |
+| `account_management_db_test` | `5433` | `account_management_db_test` | Integration tests |
+
+Wait for the health checks to pass (a few seconds), then verify:
+
+```bash
+docker compose ps
+```
+
+Both services should show `healthy`.
+
+### 4. Run migrations and seed data
+
+```bash
+npx prisma migrate deploy
+npm run prisma:seed
+```
+
+The seed script creates two persons and their accounts for local exploration:
+
+| Person | document | personId | accountId | balance | dailyWithdrawalLimit |
+|---|---|---|---|---|---|
+| John Doe | `12345678901` | 1 | 1 | 0.00 | 1000.00 |
+| Jane Smith | `98765432100` | 2 | 2 | 500.00 | 2000.00 |
+
+> IDs may differ if you have run migrations before. Check the seed output for the actual values.
+
+### 5. Start the server
+
+```bash
+npm run dev
+```
+
+The server starts on **http://localhost:3000**.
+
+### 6. Explore the API
+
+| URL | Description |
+|---|---|
+| http://localhost:3000/api/docs | Swagger interactive UI |
+| http://localhost:3000/api/docs.json | Raw OpenAPI JSON spec |
+| http://localhost:3000/health | Health check |
+
+---
+
 ## Project Structure
 
 ```
@@ -142,92 +228,6 @@ The statement endpoint accepts `?from=YYYY-MM-DD&to=YYYY-MM-DD` for period filte
 | 409 | `CONFLICT` | Unique constraint violation |
 | 422 | `UNPROCESSABLE` | Insufficient funds or daily limit exceeded |
 | 500 | `INTERNAL_SERVER_ERROR` | Unexpected server error |
-
----
-
-## Quickstart — Docker (recommended)
-
-### Prerequisites
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
-- [Node.js 18+](https://nodejs.org/) and npm
-
-### 1. Clone and install dependencies
-
-```bash
-git clone <your-repo-url>
-cd account-management-system
-npm install
-```
-
-### 2. Configure environment
-
-Copy the provided example file and adjust if needed:
-
-```bash
-cp .env.example .env
-```
-
-The defaults match the Docker setup below and work out of the box:
-
-```env
-PORT=3000
-NODE_ENV=development
-DATABASE_URL="postgresql://postgres:postgres@localhost:5434/account_management_db?schema=public"
-```
-
-### 3. Start the databases
-
-```bash
-docker compose up -d
-```
-
-This starts two isolated PostgreSQL containers:
-
-| Container | Port | Database | Purpose |
-|---|---|---|---|
-| `account_management_db` | `5434` | `account_management_db` | Development |
-| `account_management_db_test` | `5433` | `account_management_db_test` | Integration tests |
-
-Wait for the health checks to pass (a few seconds), then verify:
-
-```bash
-docker compose ps
-```
-
-Both services should show `healthy`.
-
-### 4. Run migrations and seed data
-
-```bash
-npx prisma migrate deploy
-npm run prisma:seed
-```
-
-The seed script creates two persons and their accounts for local exploration:
-
-| Person | document | personId | accountId | balance | dailyWithdrawalLimit |
-|---|---|---|---|---|---|
-| John Doe | `12345678901` | 1 | 1 | 0.00 | 1000.00 |
-| Jane Smith | `98765432100` | 2 | 2 | 500.00 | 2000.00 |
-
-> IDs may differ if you have run migrations before. Check the seed output for the actual values.
-
-### 5. Start the server
-
-```bash
-npm run dev
-```
-
-The server starts on **http://localhost:3000**.
-
-### 6. Explore the API
-
-| URL | Description |
-|---|---|
-| http://localhost:3000/api/docs | Swagger interactive UI |
-| http://localhost:3000/api/docs.json | Raw OpenAPI JSON spec |
-| http://localhost:3000/health | Health check |
 
 ---
 
