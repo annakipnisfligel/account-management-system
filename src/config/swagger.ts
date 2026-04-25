@@ -36,7 +36,7 @@ const options: swaggerJsdoc.Options = {
             balance: { type: "string", example: "100.00" },
             dailyWithdrawalLimit: { type: "string", example: "1000.00" },
             activeFlag: { type: "boolean", example: true },
-            accountType: { type: "integer", example: 1 },
+            accountType: { type: "integer", enum: [1, 2], description: "1 = CHECKING, 2 = SAVINGS", example: 1 },
             createDate: { type: "string", format: "date-time" },
           },
         },

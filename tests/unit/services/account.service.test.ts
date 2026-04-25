@@ -7,6 +7,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../../../src/models/error.model";
+import { AccountType } from "../../../src/models/account.model";
 
 jest.mock("../../../src/repositories/account.repository");
 jest.mock("../../../src/repositories/person.repository");
@@ -27,7 +28,7 @@ const mockAccount = {
   balance: new Prisma.Decimal("0.00"),
   dailyWithdrawalLimit: new Prisma.Decimal("1000.00"),
   activeFlag: true,
-  accountType: 1,
+  accountType: AccountType.CHECKING,
   createDate: new Date(),
 };
 
@@ -47,20 +48,20 @@ describe("accountService.create", () => {
     expect(mockAccountRepo.create).toHaveBeenCalledWith({
       personId: 1,
       dailyWithdrawalLimit: 1000,
-      accountType: 1,
+      accountType: AccountType.CHECKING,
     });
   });
 
   it("creates an account with custom dailyWithdrawalLimit and accountType", async () => {
     mockPersonRepo.findById.mockResolvedValue(mockPerson);
-    mockAccountRepo.create.mockResolvedValue({ ...mockAccount, dailyWithdrawalLimit: new Prisma.Decimal("500.00"), accountType: 2 });
+    mockAccountRepo.create.mockResolvedValue({ ...mockAccount, dailyWithdrawalLimit: new Prisma.Decimal("500.00"), accountType: AccountType.SAVINGS });
 
-    await accountService.create({ personId: 1, dailyWithdrawalLimit: 500, accountType: 2 });
+    await accountService.create({ personId: 1, dailyWithdrawalLimit: 500, accountType: AccountType.SAVINGS });
 
     expect(mockAccountRepo.create).toHaveBeenCalledWith({
       personId: 1,
       dailyWithdrawalLimit: 500,
-      accountType: 2,
+      accountType: AccountType.SAVINGS,
     });
   });
 
@@ -79,7 +80,7 @@ describe("accountService.getAccounts", () => {
   it("returns all accounts from repository", async () => {
     const accounts = [
       mockAccount,
-      { ...mockAccount, accountId: 2, personId: 2, accountType: 2 },
+      { ...mockAccount, accountId: 2, personId: 2, accountType: AccountType.SAVINGS },
     ];
     mockAccountRepo.findAll.mockResolvedValue(accounts);
 

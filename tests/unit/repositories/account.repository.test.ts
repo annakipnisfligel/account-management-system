@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { describe, expect, it, jest } from "@jest/globals";
+import { AccountType } from "../../../src/models/account.model";
  
 jest.mock("../../../src/config/prisma", () => ({
   prisma: {
@@ -33,7 +34,7 @@ describe("accountRepository", () => {
       balance: new Prisma.Decimal("0"),
       dailyWithdrawalLimit: new Prisma.Decimal("1000.00"),
       activeFlag: true,
-      accountType: 1,
+      accountType: AccountType.CHECKING,
       createDate,
     };
     mockPrisma.account.create.mockResolvedValue(created);
@@ -41,14 +42,14 @@ describe("accountRepository", () => {
     const result = await accountRepository.create({
       personId: 2,
       dailyWithdrawalLimit: 1000,
-      accountType: 1,
+      accountType: AccountType.CHECKING,
     });
  
     expect(mockPrisma.account.create).toHaveBeenCalledWith({
       data: {
         personId: 2,
         dailyWithdrawalLimit: 1000,
-        accountType: 1,
+        accountType: AccountType.CHECKING,
       },
     });
     expect(result).toEqual(created);
@@ -142,7 +143,7 @@ describe("accountRepository.findByIdWithLock", () => {
       balance: new Prisma.Decimal("100.50"),
       dailyWithdrawalLimit: new Prisma.Decimal("500.00"),
       activeFlag: true,
-      accountType: 1,
+      accountType: AccountType.CHECKING,
       createDate: rowDate,
     };
     const queryRaw = jest.fn(async () => [

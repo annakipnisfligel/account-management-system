@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { AccountType } from "../src/models/account.model";
 
 export const testPrisma = new PrismaClient({
   datasources: {
@@ -32,7 +33,7 @@ export async function seedTestAccount(personId: number, balance = 0) {
       personId,
       balance,
       dailyWithdrawalLimit: 1000,
-      accountType: 1,
+      accountType: AccountType.CHECKING,
     },
   });
 }

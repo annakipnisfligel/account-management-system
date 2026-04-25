@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { Request, Response, NextFunction } from "express";
 import { accountController } from "../../../src/controllers/account.controller";
 import { accountService } from "../../../src/services/account.service";
+import { AccountType } from "../../../src/models/account.model";
 
 jest.mock("../../../src/services/account.service");
 
@@ -15,7 +16,7 @@ const mockAccounts = [
     balance: new Prisma.Decimal("100.00"),
     dailyWithdrawalLimit: new Prisma.Decimal("1000.00"),
     activeFlag: true,
-    accountType: 1,
+    accountType: AccountType.CHECKING,
     createDate: new Date(),
   },
   {
@@ -24,7 +25,7 @@ const mockAccounts = [
     balance: new Prisma.Decimal("250.00"),
     dailyWithdrawalLimit: new Prisma.Decimal("500.00"),
     activeFlag: true,
-    accountType: 2,
+    accountType: AccountType.SAVINGS,
     createDate: new Date(),
   },
 ];

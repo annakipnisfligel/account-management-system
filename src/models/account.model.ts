@@ -1,25 +1,30 @@
 import { Prisma } from "@prisma/client";
 
+export enum AccountType {
+  CHECKING = 1,
+  SAVINGS = 2,
+}
+
 export interface AccountModel {
   accountId: number;
   personId: number;
   balance: Prisma.Decimal;
   dailyWithdrawalLimit: Prisma.Decimal;
   activeFlag: boolean;
-  accountType: number;
+  accountType: AccountType;
   createDate: Date;
 }
 
 export interface CreateAccountInput {
   personId: number;
   dailyWithdrawalLimit?: number;
-  accountType?: number;
+  accountType?: AccountType;
 }
 
 export interface CreateAccountRepositoryData {
   personId: number;
   dailyWithdrawalLimit: number;
-  accountType: number;
+  accountType: AccountType;
 }
 
 export interface AccountBalanceView {

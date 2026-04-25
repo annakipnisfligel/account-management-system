@@ -2,6 +2,7 @@ import { ForbiddenError, NotFoundError } from "../models/error.model";
 import {
   AccountBalanceView,
   AccountModel,
+  AccountType,
   CreateAccountInput,
 } from "../models/account.model";
 import { accountRepository } from "../repositories/account.repository";
@@ -18,7 +19,7 @@ export const accountService = {
     return accountRepository.create({
       personId: input.personId,
       dailyWithdrawalLimit: input.dailyWithdrawalLimit ?? 1000,
-      accountType: input.accountType ?? 1,
+      accountType: input.accountType ?? AccountType.CHECKING,
     });
   },
 

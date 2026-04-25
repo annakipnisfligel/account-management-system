@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { z, ZodSchema } from "zod";
 import {
+  AccountType,
   CreateAccountInput,
   StatementQueryInput,
 } from "../models/account.model";
@@ -24,9 +25,12 @@ const createAccountSchema = z.object({
     .pipe(z.number().positive({ message: "dailyWithdrawalLimit must be a positive number" }))
     .optional(),
   accountType: z
-    .number()
-    .int({ message: "accountType must be an integer" })
-    .positive({ message: "accountType must be a positive number" })
+    .nativeEnum(AccountType, {
+      message: `accountType must be one of: ${Object.entries(AccountType)
+        .filter(([k]) => isNaN(Number(k)))
+        .map(([k, v]) => `${v} (${k})`)
+        .join(", ")}`,
+    })
     .optional(),
 });
 

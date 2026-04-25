@@ -4,6 +4,7 @@ import { transactionService } from "../../../src/services/transaction.service";
 import { accountRepository } from "../../../src/repositories/account.repository";
 import { transactionRepository } from "../../../src/repositories/transaction.repository";
 import { ForbiddenError, NotFoundError, UnprocessableError } from "../../../src/models/error.model";
+import { AccountType } from "../../../src/models/account.model";
 import { prisma } from "../../../src/config/prisma";
 
 jest.mock("../../../src/repositories/account.repository");
@@ -24,7 +25,7 @@ const mockAccount = {
   balance: new Prisma.Decimal("500.00"),
   dailyWithdrawalLimit: new Prisma.Decimal("1000.00"),
   activeFlag: true,
-  accountType: 1,
+  accountType: AccountType.CHECKING,
   createDate: new Date(),
 };
 
