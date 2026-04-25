@@ -122,6 +122,96 @@ describe("validate.middleware", () => {
       expect(res.status).not.toHaveBeenCalled();
     });
 
+    it("validateCreateAccount rejects missing personId", () => {
+      const req = { body: {} } as Request;
+      const res = createResponseMock();
+      const next = jest.fn() as NextFunction;
+
+      validateCreateAccount(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ code: "VALIDATION_ERROR" })
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("validateCreateAccount rejects non-integer personId", () => {
+      const req = { body: { personId: 1.5 } } as Request;
+      const res = createResponseMock();
+      const next = jest.fn() as NextFunction;
+
+      validateCreateAccount(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: "VALIDATION_ERROR",
+          details: expect.arrayContaining([
+            expect.objectContaining({ field: "personId" }),
+          ]),
+        })
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("validateCreateAccount rejects invalid accountType enum value", () => {
+      const req = { body: { personId: 1, accountType: 99 } } as Request;
+      const res = createResponseMock();
+      const next = jest.fn() as NextFunction;
+
+      validateCreateAccount(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: "VALIDATION_ERROR",
+          details: expect.arrayContaining([
+            expect.objectContaining({ field: "accountType" }),
+          ]),
+        })
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("validateCreateAccount rejects dailyWithdrawalLimit with more than 2 decimal places", () => {
+      const req = { body: { personId: 1, dailyWithdrawalLimit: 10.123 } } as Request;
+      const res = createResponseMock();
+      const next = jest.fn() as NextFunction;
+
+      validateCreateAccount(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: "VALIDATION_ERROR",
+          details: expect.arrayContaining([
+            expect.objectContaining({ field: "dailyWithdrawalLimit" }),
+          ]),
+        })
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("validateCreateAccount rejects negative dailyWithdrawalLimit", () => {
+      const req = { body: { personId: 1, dailyWithdrawalLimit: -50 } } as Request;
+      const res = createResponseMock();
+      const next = jest.fn() as NextFunction;
+
+      validateCreateAccount(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: "VALIDATION_ERROR",
+          details: expect.arrayContaining([
+            expect.objectContaining({ field: "dailyWithdrawalLimit" }),
+          ]),
+        })
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
     it("validateTransactionAmount rejects non-positive values", () => {
       const req = { body: { value: 0 } } as Request;
       const res = createResponseMock();

@@ -95,6 +95,54 @@ describe("POST /api/accounts", () => {
     expect(res.status).toBe(400);
     expect(res.body.code).toBe("VALIDATION_ERROR");
   });
+
+  it("creates an account with accountType=SAVINGS (2)", async () => {
+    const person = await seedTestPerson();
+
+    const res = await request(app).post("/api/accounts").send({
+      personId: person.personId,
+      accountType: 2,
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.accountType).toBe(2);
+  });
+
+  it("returns 400 for invalid accountType enum value", async () => {
+    const person = await seedTestPerson();
+
+    const res = await request(app).post("/api/accounts").send({
+      personId: person.personId,
+      accountType: 99,
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when dailyWithdrawalLimit has more than 2 decimal places", async () => {
+    const person = await seedTestPerson();
+
+    const res = await request(app).post("/api/accounts").send({
+      personId: person.personId,
+      dailyWithdrawalLimit: 10.123,
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when dailyWithdrawalLimit is negative", async () => {
+    const person = await seedTestPerson();
+
+    const res = await request(app).post("/api/accounts").send({
+      personId: person.personId,
+      dailyWithdrawalLimit: -100,
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
 });
 
 describe("GET /api/accounts/:id/balance", () => {
@@ -114,6 +162,27 @@ describe("GET /api/accounts/:id/balance", () => {
     const res = await request(app).get("/api/accounts/999999/balance");
 
     expect(res.status).toBe(404);
+  });
+
+  it("returns 400 when id is non-integer (abc)", async () => {
+    const res = await request(app).get("/api/accounts/abc/balance");
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when id is zero", async () => {
+    const res = await request(app).get("/api/accounts/0/balance");
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when id is negative", async () => {
+    const res = await request(app).get("/api/accounts/-1/balance");
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
   });
 });
 
@@ -139,6 +208,26 @@ describe("PATCH /api/accounts/:id/block", () => {
     const res = await request(app).patch(`/api/accounts/${account.accountId}/block`);
 
     expect(res.status).toBe(403);
+  });
+
+  it("returns 404 if account does not exist", async () => {
+    const res = await request(app).patch("/api/accounts/999999/block");
+
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 400 when id is non-integer", async () => {
+    const res = await request(app).patch("/api/accounts/abc/block");
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when id is zero or negative", async () => {
+    const res = await request(app).patch("/api/accounts/0/block");
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
   });
 });
 
@@ -193,6 +282,47 @@ describe("POST /api/accounts/:id/deposit", () => {
       .send({});
 
     expect(res.status).toBe(400);
+  });
+
+  it("returns 404 when account does not exist", async () => {
+    const res = await request(app)
+      .post("/api/accounts/999999/deposit")
+      .send({ value: 100 });
+
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 400 when id is non-integer", async () => {
+    const res = await request(app)
+      .post("/api/accounts/abc/deposit")
+      .send({ value: 100 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when value has more than 2 decimal places", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId);
+
+    const res = await request(app)
+      .post(`/api/accounts/${account.accountId}/deposit`)
+      .send({ value: 10.123 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when value is zero", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId);
+
+    const res = await request(app)
+      .post(`/api/accounts/${account.accountId}/deposit`)
+      .send({ value: 0 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
   });
 });
 
@@ -251,6 +381,85 @@ describe("POST /api/accounts/:id/withdraw", () => {
       .send({ value: 100 });
 
     expect(res.status).toBe(403);
+  });
+
+  it("returns 404 when account does not exist", async () => {
+    const res = await request(app)
+      .post("/api/accounts/999999/withdraw")
+      .send({ value: 100 });
+
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 400 when id is non-integer", async () => {
+    const res = await request(app)
+      .post("/api/accounts/abc/withdraw")
+      .send({ value: 100 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when value has more than 2 decimal places", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 500);
+
+    const res = await request(app)
+      .post(`/api/accounts/${account.accountId}/withdraw`)
+      .send({ value: 10.123 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when value is zero", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 500);
+
+    const res = await request(app)
+      .post(`/api/accounts/${account.accountId}/withdraw`)
+      .send({ value: 0 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("succeeds when dailyWithdrawalLimit is 0 (limit disabled)", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 500);
+    await testPrisma.account.update({
+      where: { accountId: account.accountId },
+      data: { dailyWithdrawalLimit: 0 },
+    });
+
+    const res = await request(app)
+      .post(`/api/accounts/${account.accountId}/withdraw`)
+      .send({ value: 500 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.newBalance).toBe("0.00");
+  });
+
+  it("accumulates multiple withdrawals towards the daily limit", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 5000);
+    await testPrisma.account.update({
+      where: { accountId: account.accountId },
+      data: { dailyWithdrawalLimit: 300 },
+    });
+
+    // First withdrawal: 200 (total=200, within limit)
+    const first = await request(app)
+      .post(`/api/accounts/${account.accountId}/withdraw`)
+      .send({ value: 200 });
+    expect(first.status).toBe(200);
+
+    // Second withdrawal: 150 (total=350, exceeds limit of 300)
+    const second = await request(app)
+      .post(`/api/accounts/${account.accountId}/withdraw`)
+      .send({ value: 150 });
+    expect(second.status).toBe(422);
+    expect(second.body.code).toBe("UNPROCESSABLE");
   });
 });
 
@@ -338,5 +547,81 @@ describe("GET /api/accounts/:id/statement", () => {
     const res = await request(app).get("/api/accounts/999999/statement");
 
     expect(res.status).toBe(404);
+  });
+
+  it("from-only: returns transactions on or after the from date", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 1000);
+
+    await request(app)
+      .post(`/api/accounts/${account.accountId}/deposit`)
+      .send({ value: 50 });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const res = await request(app).get(
+      `/api/accounts/${account.accountId}/statement?from=${today}`
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.count).toBe(1);
+  });
+
+  it("to-only: returns transactions on or before the to date", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 1000);
+
+    await request(app)
+      .post(`/api/accounts/${account.accountId}/deposit`)
+      .send({ value: 75 });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const res = await request(app).get(
+      `/api/accounts/${account.accountId}/statement?to=${today}`
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.count).toBe(1);
+  });
+
+  it("returns 400 when from is after to", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId);
+
+    const res = await request(app).get(
+      `/api/accounts/${account.accountId}/statement?from=2026-12-31&to=2026-01-01`
+    );
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when id is non-integer", async () => {
+    const res = await request(app).get("/api/accounts/abc/statement");
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns transactions ordered by transactionDate ascending", async () => {
+    const person = await seedTestPerson();
+    const account = await seedTestAccount(person.personId, 1000);
+
+    await request(app)
+      .post(`/api/accounts/${account.accountId}/deposit`)
+      .send({ value: 100 });
+    await request(app)
+      .post(`/api/accounts/${account.accountId}/deposit`)
+      .send({ value: 200 });
+
+    const res = await request(app).get(
+      `/api/accounts/${account.accountId}/statement`
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(2);
+    const dates = res.body.data.map((t: { transactionDate: string }) => t.transactionDate);
+    expect(dates[0] <= dates[1]).toBe(true);
   });
 });
