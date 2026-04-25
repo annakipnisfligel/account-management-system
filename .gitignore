@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-test/
+
+# Generated Prisma client (reproducible via prisma generate)
+src/generated/
+prisma/generated/
+
+# Test coverage
+coverage/
+
+# Environment files — keep .env out of version control
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript incremental build cache
+*.tsbuildinfo

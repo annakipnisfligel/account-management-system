@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  personId  Int       @id @default(autoincrement()) @map("person_id")
+  name      String
+  document  String    @unique
+  birthDate DateTime  @map("birth_date") @db.Date
+  accounts  Account[]
+
+  @@map("persons")
+}
+
+model Account {
+  accountId            Int           @id @default(autoincrement()) @map("account_id")
+  personId             Int           @map("person_id")
+  person               Person        @relation(fields: [personId], references: [personId])
+  balance              Decimal       @default(0) @db.Decimal(15, 2)
+  dailyWithdrawalLimit Decimal       @default(0) @db.Decimal(15, 2) @map("daily_withdrawal_limit")
+  activeFlag           Boolean       @default(true) @map("active_flag")
+  accountType          Int           @default(1) @map("account_type")
+  createDate           DateTime      @default(now()) @map("create_date")
+  transactions         Transaction[]
+
+  @@map("accounts")
+}
+
+model Transaction {
+  transactionId   Int             @id @default(autoincrement()) @map("transaction_id")
+  accountId       Int             @map("account_id")
+  account         Account         @relation(fields: [accountId], references: [accountId])
+  value           Decimal         @db.Decimal(15, 2)
+  transactionDate DateTime        @default(now()) @map("transaction_date")
+  transactionType TransactionType @map("transaction_type")
+
+  @@map("transactions")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+}
