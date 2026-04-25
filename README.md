@@ -162,7 +162,13 @@ npm install
 
 ### 2. Configure environment
 
-The repository includes a local `.env` configured for the Docker setup below:
+Copy the provided example file and adjust if needed:
+
+```bash
+cp .env.example .env
+```
+
+The defaults match the Docker setup below and work out of the box:
 
 ```env
 PORT=3000
